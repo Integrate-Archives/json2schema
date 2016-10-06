@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+'use strict';
+
+var Package = require(__dirname + '/../package.json');
+var Program = require('commander');
+var Converter = require('..');
+
+Program
+  .version(Package.version)
+  .description('Convert JSON Objects to JSON Schema.')
+  .option('-o, --out <out>', 'Specify the path and filename you want to output your schema document to. Defaults to "./schema.json"')
+  .arguments('<URL|filename>')
+  .action(main)
+  .parse(process.argv);
+
+function main(url) {
+    Converter.convert({
+        url: url,
+        outPut: Program.out || './schema.json'
+    });
+}

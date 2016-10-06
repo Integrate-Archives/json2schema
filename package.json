@@ -1,0 +1,41 @@
+{
+  "name": "json2schema",
+  "version": "1.0.0",
+  "description": "Transform JSON Object to JSON Schema Version 4",
+  "keywords": [
+    "JSON",
+    "Schema",
+    "JSON to Schema",
+    "convert",
+    "converter",
+    "generate",
+    "generator"
+  ],
+  "bugs": {
+    "email" : "jc@jacobcarter.com"
+  },
+  "preferGlobal": true,
+  "main": "index.js",
+  "directories": {
+    "bin": "./bin"
+  },
+  "bin": {
+    "json2schema": "./bin/json2schema"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IntegrateDev/json-schema-generator"
+  },
+  "author": "Jacob Carter",
+  "contributors": [
+    { 
+      "name" : "Jacob Carter",
+      "email" : "jc@jacobcarter.com",
+      "url" : "http://strangemilk.com"
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "commander": "*"
+  }
+}
