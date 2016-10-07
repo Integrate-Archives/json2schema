@@ -1,6 +1,6 @@
 {
   "name": "json2schema",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Transform JSON Object to JSON Schema Version 4",
   "keywords": [
     "JSON",

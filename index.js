@@ -11,20 +11,26 @@ var schemaOutput = {};
 
 Converter.convert = function(options, callback) {
   requestOptions = options;
-  var filepath = path.resolve(requestOptions.url);  
 
-  //Get access to JSON object from file user passed in.
-  fs.readFile(filepath, 'utf8', function(err, data) {
-    if (err) {
-      throw err;
-    }
-    JSONObject = JSON.parse(data);
-    schemaOutput = entry(JSONObject);
-    fs.writeFile(requestOptions.outPut, JSON.stringify(schemaOutput), 'utf8', function() {
-      //successfull file write. Implement callback here.
+  if (requestOptions.url) {
+    var filepath = path.resolve(requestOptions.url);  
+    //Get access to JSON object from file user passed in.
+    fs.readFile(filepath, 'utf8', function(err, data) {
+      if (err) {
+        throw err;
+      }
+      JSONObject = JSON.parse(data);
+      schemaOutput = entry(JSONObject);
+      fs.writeFile(requestOptions.outPut, JSON.stringify(schemaOutput), 'utf8', function() {
+        //successfull file write. Implement callback here.
+      });
+      
     });
-    
-  });
+  } else if (requestOptions.data) {
+    return entry(requestOptions.data);
+  } else {
+    throw Error('Must include file or data to convert.');
+  }
 }
 
 /**

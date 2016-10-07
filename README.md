@@ -9,6 +9,8 @@ $ npm install -g json2schema
 
 ## Usage
 
+*CLI Tool*
+
 ```bash
 $ json2schema -h
 
@@ -21,6 +23,17 @@ $ json2schema -h
     -h, --help       output usage information
     -V, --version    output the version number
     -o, --out <out>  Specify the path and filename you want to output your schema document to. Defaults to "./schema.json"
+```
+
+*In your JavaScript*
+
+```js
+var Coverter = require('json2schema');
+
+var generatedSchema = Converter.convert({
+	data: <JSONObject>
+});
+
 ```
 
 ### Example
