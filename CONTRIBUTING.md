@@ -1,6 +1,6 @@
 # Contributing Guidelines
 
-First of all, thank you for considering to contribute to the postman2swagger2 project.
+First of all, thank you for considering to contribute to the json2schema project.
 The community is important to us and we appreciate your time and effort to help pushing towards a better resource.
 
 ## Submitting a PR
@@ -30,6 +30,6 @@ A fail does not necessarily mean a PR should be rejected, but it is a red flag t
 6. Tag the commit as a new release (like v2.18.0)
 7. Push all the changes including tags (eg. `$ git push --tags`)
 8. Publish to npm with `$ npm publish ./`
-9. Add a new [Release in GitHub](https://github.com/IntegrateDev/postman2swagger2/releases)
+9. Add a new [Release in GitHub](https://github.com/IntegrateDev/json2schema/releases)
 
 Our intention is to keep working on this document. Happy coding!

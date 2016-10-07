@@ -21,98 +21,18 @@ Converter.convert = function(options, callback) {
     JSONObject = JSON.parse(data);
     schemaOutput = entry(JSONObject);
     fs.writeFile(requestOptions.outPut, JSON.stringify(schemaOutput), 'utf8', function() {
-      //successfull file write.
+      //successfull file write. Implement callback here.
     });
     
   });
 }
 
 /**
- * Covert JSON Object to JSON schema
+ * Entry point for visitor pattern.
  * 
- * @param {object} obj JSON object that you are generating schema from.
- * @param {boolean} initialLoop Specifiy whether you are at the top of the object or not.
+ * @param {object} JSON object you are generating schema for.
+ * @return {object} Schema object that was generated.
  */
-function buildSchemaObject(obj, initialLoop) {
-
-  if (initialLoop) {
-
-    //Setting root level schema data for request body.
-    var topSchemaLevel = {
-      '$schema': 'http://json-schema.org/draft-04/schema#'
-    };
-    if (obj.length) {
-      topSchemaLevel.type = 'array',
-      topSchemaLevel.items = tempObj
-    } else {
-      topSchemaLevel.type = 'object',
-      topSchemaLevel.required = Object.keys(obj),
-      topSchemaLevel.properties = tempObj
-    }
-  } else {
-    topSchemaLevel = tempObj;
-  }
-
-  var tempObj = {};
-
-  //Looping through keys of object to build properties object.
-  for (var key in obj) {
-
-    //Setting string type.
-    if (typeof obj[key] === 'string') {
-      tempObj[key] = {
-        type: 'string',
-        example: obj[key]
-      }
-
-    //Setting number type.
-    } else if (typeof obj[key] === 'number') {
-      tempObj[key] = {
-        type: 'number'
-      }
-
-    //Setting null type.
-    } else if (obj[key] === null) {
-      tempObj[key] = {
-        type: 'null'
-      }
-
-    //Setting array and object type.
-    } else if (typeof obj[key] === 'object') {
-
-      //Set schema for object.
-      if (obj[key].length === undefined) {
-
-        //If object call buildSchemaObject recursively.
-        tempObj[key] = {
-          type: 'object',
-          properties: buildSchemaObject(obj[key]),
-          required:  Object.keys(obj[key])
-        }
-
-      //Set schema for array.
-      /**
-       * Assumptions made:
-       * If an array is an array of objects, each object in the array can have properties that are found in any of the objects.
-       */
-      } else {
-        //If array contains objects build context object
-        if (obj[key])
-        tempObj[key] = {
-          type: 'array',
-          items: buildSchemaObject(obj[key])
-        }
-        if (tempObj[key].items) {
-          tempObj[key].items = mergeItems(tempObj[key].items);
-        }
-      }
-    }
-  }
-  return topSchemaLevel;
-}
-
-//Visitor pattern
-
 function entry(obj) {
 
   var scope = {};
@@ -124,29 +44,41 @@ function entry(obj) {
   return scope;
 }
 
-function visit(scope, thing) {
-  switch(typeof thing) {
+/**
+ * Router function to determine which 'type' schema is needed for.
+ * 
+ * @param {object} scope Localized object that schema is being inserted into.
+ * @param {any} item Item that schema is being generated for.
+ */
+function visit(scope, item) {
+  switch(typeof item) {
     case 'string':
-      visitorString(scope, thing);
+      visitorString(scope, item);
       break;
     case 'number':
-      visitorNumber(scope, thing);
+      visitorNumber(scope, item);
       break;
     case 'boolean':
-      visitorBoolean(scope, thing);
+      visitorBoolean(scope, item);
       break;
     case 'object':
-      if (thing === null) {
+      if (item === null) {
         visitorNull(scope);          
-      } else if (thing.constructor === Object) {
-        visitorObject(scope, thing);
-      } else if (thing.constructor === Array) {
-        visitorArray(scope, thing);
+      } else if (item.constructor === Object) {
+        visitorObject(scope, item);
+      } else if (item.constructor === Array) {
+        visitorArray(scope, item);
       }
       break;
   }
 }
 
+/**
+ * Schema generator for Objects
+ * 
+ * @param {object} scope Localized object that schema is being inserted into.
+ * @param {object} obj Object the schema is being generated for.
+ */
 function visitorObject(scope, obj) {
 
   scope.type = 'object';
@@ -160,6 +92,12 @@ function visitorObject(scope, obj) {
 
 }
 
+/**
+ * Schema generator for Arrays
+ * 
+ * @param {object} scope Localized object that schema is being inserted into.
+ * @param {array} arr Array the schema is being generated for.
+ */
 function visitorArray(scope, arr) {
    
     var psuedoScope = [];
@@ -174,24 +112,53 @@ function visitorArray(scope, arr) {
     scope.items = mergedScope;
 }
 
+/**
+ * Schema generator for Strings
+ * 
+ * @param {object} scope Localized object that schema is being inserted into.
+ * @param {string} value String the schema is being generated for.
+ */
 function visitorString(scope, value) {
   scope.type = 'string',
   scope.example = value;
 }
 
+/**
+ * Schema generator for Booleans
+ * 
+ * @param {object} scope Localized object that schema is being inserted into.
+ * @param {boolean} value Boolean the schema is being generated for.
+ */
 function visitorBoolean(scope, value) {
   scope.type = 'boolean';
 }
 
+/**
+ * Schema generator for Null
+ * 
+ * @param {object} scope Localized object that schema is being inserted into.
+ */
 function visitorNull(scope) {
   scope.type = 'null';
 }
 
+/**
+ * Schema generator for Numbers
+ * 
+ * @param {object} scope Localized object that schema is being inserted into.
+ * @param {number} value Number the schema is being generated for.
+ */
 function visitorNumber(scope, value) {
   scope.type = 'number',
   scope.example = value;
 }
 
+/**
+ * When multiple objects can be the value of a property, we need a schema that encompasses them all.
+ * 
+ * @param {array} items Array of objects that a single schema is being generated for.
+ * @return {object} The schema representing all objects that were passed in.
+ */
 function mergeObjects(items) {
   debugger;
   var singlePropertyObject = {};
@@ -203,9 +170,10 @@ function mergeObjects(items) {
   for (var item in items) {
       
     //Aggregate item types
-    if (itemTypes.indexOf(items[item].type) === -1) {
-      itemTypes.push(items[item].type);
+    if (typeof items[item].type === 'string') {
+      items[item].type = [items[item].type];
     }
+    itemTypes = arrayUnique(itemTypes.concat(items[item].type));
       
     //Aggregate item required
     if (items[item].required && items[item].required.length) {
@@ -217,23 +185,19 @@ function mergeObjects(items) {
     }
 
     //Aggregate item properties (RECURSION)
-    // for (var property in items[item].properties) {
+    for (var property in items[item].properties) {
 
-    //   //Merging property types.
-    //   if (itemProperties[property] && itemProperties[property].type.indexOf(items[item].properties[property].type) === -1) {
-    //       itemProperties[property].type.push(items[item].properties[property].type)
-    //   } else if (itemProperties[property] === undefined) {
-    //       itemProperties[property] = {};
-    //       itemProperties[property].type = [items[item].properties[property].type]
-    //   }
-    // }
+      //Merging properties.
+      if (itemProperties[property] === undefined) {
+        itemProperties[property] = items[item].properties[property]
+      } else {
+        itemProperties[property] = mergeObjects([itemProperties[property], items[item].properties[property]]);
+      }
+    }
 
     //Aggregate item items (recursion)
-    if (item.items && item.items.length > 0) {
-
-      for (var singleItem in item.items) {
-        
-      }
+    if (items[item].items && Object.keys(items[item].items).length > 0) {
+      itemItems = mergeObjects([itemItems, items[item].items]);
     }
   }
 
@@ -253,4 +217,21 @@ function mergeObjects(items) {
   }
 
   return singlePropertyObject
+}
+
+/**
+ * Helper function to de-dupe arrays of strings.
+ * 
+ * @param {array} array Array that is being de-duped.
+ * @return {array} De-duped array.
+ */
+function arrayUnique(array) {
+    var a = array.concat();
+    for (var i=0; i <a.length; ++i) {
+        for (var j=i+1; j <a.length; ++j) {
+            if (a[i] === a[j])
+                a.splice(j--, 1);
+        }
+    }
+    return a;
 }
